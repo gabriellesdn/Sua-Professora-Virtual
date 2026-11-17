@@ -57,7 +57,7 @@ Envie os arquivos para um repositório no GitHub. Depois vá em **Settings > Pag
 index.html--                 --telas
 style.css--                  --visual
 app.js--                     --toda a lógica
-professora-virtual.html--    --os três arquivos juntos em um só
+professora-virtual.html--    --o programa completo, caso baixe esse, não há necessidade de baixar os demais.
 ```
 
 ## Em breve uma versão melhor e adaptada para diversos modelos de IA.
