@@ -1,6 +1,10 @@
 # Sua Professora Virtual
 
 Uma companheira de estudos com IA. Você conversa por voz ou por texto e ela monta o plano de estudos, marca provas no calendário, cria flashcards e acompanha o seu progresso. É uma **aplicação web** (web app): roda direto no navegador, sem instalar nada, e foi feita com HTML, CSS e JavaScript, sem servidor, usando a API gratuita do Gemini.
+<p align="center">
+  <img src="img/banner.jpg" width="65%" />
+  <img src="img/modofocus.jpg" width="33%" />
+</p>
 
 ## O que ela faz
 
