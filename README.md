@@ -48,12 +48,9 @@ Se aparecer o aviso "Modelo não encontrado", o Google trocou o nome do modelo d
 
 - Os avisos só funcionam com a página aberta.
 - Os dados não sincronizam entre aparelhos.
-- O reconhecimento de voz funciona melhor no Chrome e no Edge.
+- O reconhecimento de voz funciona melhor no Edge.
 - A IA pode errar: vale conferir planos e flashcards.
 
-## Para quem publica o projeto
-
-Envie os arquivos para um repositório no GitHub. Depois vá em **Settings > Pages**, escolha a branch `main` e a pasta `/ (root)` e salve. Em alguns minutos o link do site aparece nessa mesma tela.
 
 ## Estrutura
 
