@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'none'; script-src 'self' file:; style-src 'self' file: 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://generativelanguage.googleapis.com; base-uri 'none'; form-action 'none'">
+  <title>Sua Professora Virtual</title>
+  <meta name="description"
+    content="Companheira de estudos com IA: plano de estudos, Pomodoro, calendário de provas, flashcards, notas e faltas.">
+  <meta name="theme-color" content="#F2F0E9">
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2714%27 fill=%27%23668B77%27/%3E%3Cpath d=%27M9 13l7-4 7 4-7 4z M12 16v4c2 2 6 2 8 0v-4%27 fill=%27none%27 stroke=%27%23F8F7F2%27 stroke-width=%271.8%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="app" id="app" data-tab="chat">
+    <header>
+      <div>
+        <h1>Sua Professora Virtual</h1>
+        <p>Sua companheira de estudos</p>
+      </div>
+      <div class="actions">
+        <button class="ghost" id="voiceBtn" type="button">Voz</button>
+        <button class="ghost" id="keyBtn" type="button">Chave da API</button>
+        <button class="ghost" id="clear" type="button">Limpar conversa</button>
+      </div>
+      <nav class="tabs" aria-label="Seções">
+        <button class="tab active" id="tabChat" type="button" data-tab="chat">Conversa</button>
+        <button class="tab" type="button" data-tab="profile">Seu perfil</button>
+        <button class="tab" type="button" data-tab="pomodoro">Foco</button>
+        <button class="tab" type="button" data-tab="cards">Revisão</button>
+        <button class="tab" type="button" data-tab="progress">Progresso</button>
+        <button class="chip" id="chip" type="button" hidden>Foco 25:00</button>
+      </nav>
+      <div class="tour" id="tourCard" hidden>
+        <small id="tourStep"></small>
+        <strong id="tourTitle"></strong>
+        <p id="tourText"></p>
+        <div class="tour-actions">
+          <button class="ghost" id="tourBack" type="button">Voltar</button>
+          <button class="ghost" id="tourSkip" type="button">Pular tour</button>
+          <button class="primary" id="tourNext" type="button">Próximo</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="chat" id="chat" aria-live="polite">
+      <p class="empty" id="empty">Toque no microfone ou escreva abaixo o que precisa estudar. Por exemplo: tenho prova
+        de química na sexta e duas horas livres por dia.</p>
+    </section>
+
+    <section class="panel" id="panel-profile" hidden>
+      <div class="card">
+        <div class="plan-actions">
+          <button class="primary" id="planMake" type="button">Montar meu plano</button>
+          <button class="ghost" id="planProfile" type="button">Refazer perfil</button>
+          <button class="ghost" id="planTour" type="button">Ver tour</button>
+          <button class="ghost" id="planClear" type="button">Limpar plano</button>
+        </div>
+        <h2 class="card-title">Seu perfil de estudo</h2>
+        <div class="profile" id="profileBox"></div>
+      </div>
+      <div class="card" id="examCard">
+        <h2 class="card-title">Provas</h2>
+        <div class="exams" id="examList"></div>
+      </div>
+      <div class="card">
+        <h2 class="card-title" id="planTitle">Plano de estudos</h2>
+        <div class="plan" id="planList"></div>
+      </div>
+      <div class="card">
+        <h2 class="card-title">Calendário</h2>
+        <p class="hint">Dica: ao pedir para a professora marcar algo, diga a data completa (dia e mês) e o horário. Por
+          exemplo: “consulta em 20 de março, das 14h às 15h”. Assim ela registra certinho.</p>
+        <div class="cal-head">
+          <button class="ghost" id="calPrev" type="button" aria-label="Mês anterior">‹</button>
+          <strong id="calTitle"></strong>
+          <button class="ghost" id="calNext" type="button" aria-label="Próximo mês">›</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="ev-form">
+          <input id="evTitle" type="text" placeholder="Ex.: Prova de química" autocomplete="off" aria-label="Título">
+          <input id="evDate" type="date" aria-label="Data">
+          <input id="evStart" type="time" aria-label="Início (opcional)" title="Início (opcional)">
+          <input id="evEnd" type="time" aria-label="Fim (opcional)" title="Fim (opcional)">
+          <select id="evKind" aria-label="Tipo">
+            <option value="compromisso">Compromisso</option>
+            <option value="prova">Prova</option>
+            <option value="entrega">Entrega</option>
+          </select>
+          <select class="subject-select" id="evSubject" aria-label="Matéria da prova" hidden></select>
+          <button class="primary" id="evAdd" type="button">Marcar</button>
+        </div>
+        <h2 class="list-title">Próximas datas</h2>
+        <ul class="ev-list" id="evList"></ul>
+      </div>
+      <div class="card" id="dataCard">
+        <h2 class="card-title">Seus dados</h2>
+        <p class="hint">Tudo fica salvo apenas neste navegador. Faça um backup de vez em quando.</p>
+        <div class="plan-actions">
+          <button class="ghost" id="exportBtn" type="button">Exportar backup</button>
+          <button class="ghost" id="importBtn" type="button">Importar backup</button>
+          <button class="ghost" id="wipeBtn" type="button">Apagar todos os meus dados</button>
+          <input type="file" id="importFile" accept="application/json" hidden>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="panel" id="panel-pomodoro" hidden>
+      <div class="card" id="pomoCard">
+        <h2 class="card-title">Pomodoro</h2>
+        <div class="pomo-setup">
+          <p class="hint">Escolha um ritmo ou monte o seu. A pausa começa sozinha e você é avisado a cada troca.</p>
+          <div class="presets">
+            <button class="preset" type="button" data-f="25" data-b="5"><strong>Clássico</strong><span>25 min de foco, 5
+                de pausa</span></button>
+            <button class="preset" type="button" data-f="50" data-b="10"><strong>Profundo</strong><span>50 min de foco,
+                10 de pausa</span></button>
+            <button class="preset" type="button" data-f="25" data-b="15"><strong>Tranquilo</strong><span>25 min de foco,
+                15 de pausa</span></button>
+          </div>
+
+          <label class="subject-row">Matéria <select class="subject-select" id="pSubject"
+              aria-label="Matéria"></select></label>
+          <div class="fields">
+            <label>Foco (min) <input type="number" id="pFocus" min="1" max="180" value="25"></label>
+            <label>Pausa (min) <input type="number" id="pBreak" min="1" max="60" value="5"></label>
+            <label>Ciclos <input type="number" id="pCycles" min="1" max="12" value="4"></label>
+          </div>
+
+        </div>
+        <div class="coach" id="coachBox" aria-live="polite">
+          <small>Sua Professora Virtual</small>
+          <p id="coachText">Quando você iniciar um ciclo, eu acompanho por aqui e aviso as pausas.</p>
+        </div>
+        <div class="timer" id="pTimer">
+          <svg class="ring" viewBox="0 0 200 200" aria-hidden="true">
+            <circle class="ring-bg" cx="100" cy="100" r="90"></circle>
+            <circle class="ring-fg" id="ringFg" cx="100" cy="100" r="90"></circle>
+          </svg>
+          <div class="timer-text">
+            <div class="time" id="pTime">25:00</div>
+            <div class="phase" id="pPhase">Pronto para começar</div>
+          </div>
+        </div>
+        <div class="timer-actions">
+          <button class="primary" id="pStart" type="button">Iniciar</button>
+          <button class="ghost" id="pPause" type="button" disabled>Pausar</button>
+          <button class="ghost" id="pStop" type="button" disabled>Parar</button>
+          <button class="ghost" id="pFocusMode" type="button">Modo foco</button>
+        </div>
+      </div>
+      <div class="card" id="todayCard">
+        <h2 class="card-title">Tarefas e meta de hoje</h2>
+        <div class="goal">
+          <label>Meta de estudo de hoje (min) <input type="number" id="goalInput" min="0" max="1440"
+              value="120"></label>
+          <div class="meter-bar">
+            <div id="goalFill"></div>
+          </div>
+          <small id="goalText"></small>
+        </div>
+        <div class="ev-form">
+          <input id="taskText" type="text" placeholder="Ex.: Resolver lista de cálculo" autocomplete="off"
+            aria-label="Tarefa">
+          <select class="subject-select" id="taskSubject" aria-label="Matéria"></select>
+          <button class="primary" id="taskAdd" type="button">Adicionar</button>
+        </div>
+        <ul class="ev-list" id="taskList"></ul>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-cards" hidden>
+      <div class="card">
+        <h2 class="card-title">Flashcards</h2>
+        <div class="deck-head">
+          <select class="subject-select" id="cardFilter" data-all="1" aria-label="Filtrar matéria"></select>
+          <select id="cardLevelFilter" aria-label="Filtrar nível">
+            <option value="">Todos os níveis</option>
+            <option value="facil">Fácil</option>
+            <option value="medio">Médio</option>
+            <option value="dificil">Difícil</option>
+          </select>
+          <button class="primary" id="reviewStart" type="button">Revisar</button>
+        </div>
+        <p class="hint" id="cardInfo"></p>
+        <div class="card-box" id="cardBox" hidden>
+          <small id="cardCount"></small>
+          <div class="card-face">
+            <div id="faceQ"></div>
+            <div class="a" id="faceA" hidden></div>
+          </div>
+          <div class="card-actions">
+            <button class="primary" id="cardShow" type="button">Mostrar resposta</button>
+            <button class="ghost" id="cardWrong" type="button" hidden>Errei</button>
+            <button class="primary" id="cardRight" type="button" hidden>Acertei</button>
+          </div>
+        </div>
+        <div class="gen">
+          <p class="gen-title">Gerar com a professora</p>
+          <div class="ev-form">
+            <input id="genTopic" type="text" placeholder="Assunto (ex.: fotossíntese)" autocomplete="off"
+              aria-label="Assunto">
+            <select class="subject-select" id="genSubject" aria-label="Matéria"></select>
+          </div>
+          <div class="seg" id="genLevel" role="group" aria-label="Nível das perguntas">
+            <button type="button" data-level="facil">Fácil</button>
+            <button type="button" data-level="medio" class="on">Médio</button>
+            <button type="button" data-level="dificil">Difícil</button>
+          </div>
+          <small id="genHint">Médio: interpretação e aplicação do conhecimento.</small>
+          <div class="ev-form">
+            <select id="genCount" aria-label="Quantidade">
+              <option value="5">5 cartas</option>
+              <option value="8" selected>8 cartas</option>
+              <option value="10">10 cartas</option>
+            </select>
+            <button class="primary" id="genBtn" type="button">Gerar flashcards</button>
+          </div>
+        </div>
+        <div class="ev-form">
+          <input id="cardQ" type="text" placeholder="Pergunta (frente)" autocomplete="off" aria-label="Pergunta">
+          <input id="cardA" type="text" placeholder="Resposta (verso)" autocomplete="off" aria-label="Resposta">
+          <select class="subject-select" id="cardSubject" aria-label="Matéria"></select>
+          <select id="cardLevel" aria-label="Nível">
+            <option value="facil">Fácil</option>
+            <option value="medio" selected>Médio</option>
+            <option value="dificil">Difícil</option>
+          </select>
+          <button class="primary" id="cardAdd" type="button">Criar flashcard</button>
+        </div>
+        <p class="hint">Dica: você também pode pedir direto na conversa, por exemplo: 'faça 8 flashcards difíceis de
+          fotossíntese'.</p>
+      </div>
+      <div class="card">
+        <h2 class="card-title">Anotações</h2>
+        <div class="note-form">
+          <select class="subject-select" id="noteSubject" aria-label="Matéria"></select>
+          <textarea id="noteText" rows="4" placeholder="Escreva sua anotação…" aria-label="Anotação"></textarea>
+          <button class="primary" id="noteAdd" type="button">Salvar anotação</button>
+        </div>
+        <ul class="ev-list" id="noteList"></ul>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-progress" hidden>
+      <div class="card">
+        <div class="stats">
+          <div class="stat"><strong id="stToday">0 min</strong><span>estudados hoje</span></div>
+          <div class="stat"><strong id="stStreak">0</strong><span>dias seguidos</span></div>
+          <div class="stat"><strong id="stCards">0</strong><span>flashcards para revisar</span></div>
+        </div>
+        <h2 class="list-title">Hoje por matéria</h2>
+        <div class="bars" id="todayBars"></div>
+      </div>
+      <div class="card">
+        <h2 class="list-title">Últimos 7 dias</h2>
+        <div class="seg" id="chartModes" role="group" aria-label="Tipo de gráfico">
+          <button type="button" data-mode="pie">Pizza</button>
+          <button type="button" data-mode="line">Crescente</button>
+          <button type="button" data-mode="col">Colunas</button>
+        </div>
+        <div class="chart" id="weekChart"></div>
+        <div class="legend" id="weekLegend"></div>
+      </div>
+      <div class="card">
+        <h2 class="list-title">Acertos nas revisões</h2>
+        <div class="chart" id="perfChart"></div>
+      </div>
+      <div class="card" id="gradesCard">
+        <h2 class="card-title">Notas e faltas</h2>
+        <div class="seg" id="gradesMode" role="group" aria-label="Tipo de registro">
+          <button type="button" data-mode="grade" class="on">Nota</button>
+          <button type="button" data-mode="absence">Falta</button>
+        </div>
+        <div class="ev-form" id="gradeForm">
+          <select class="subject-select" id="gSubject" aria-label="Matéria"></select>
+          <input id="gTitle" type="text" placeholder="Avaliação (ex.: Prova 1)" autocomplete="off"
+            aria-label="Avaliação">
+          <input id="gValue" type="number" step="0.1" min="0" placeholder="Nota" aria-label="Nota">
+          <label class="mini">Máx. <input id="gMax" type="number" step="0.1" min="0.1" value="10"></label>
+          <label class="mini">Peso <input id="gWeight" type="number" step="0.1" min="0.1" value="1"></label>
+          <button class="primary" id="gAdd" type="button">Registrar nota</button>
+        </div>
+        <div class="ev-form" id="absenceForm" hidden>
+          <select class="subject-select" id="aSubject" aria-label="Matéria"></select>
+          <input id="aDate" type="date" aria-label="Data da falta">
+          <label class="mini">Qtd. <input id="aQty" type="number" min="1" max="20" value="1"></label>
+          <button class="primary" id="aAdd" type="button">Registrar falta</button>
+        </div>
+        <div class="subjects-summary" id="gradesSummary"></div>
+      </div>
+
+    </section>
+
+    <footer class="dock">
+      <div class="meter" id="meter" aria-hidden="true"></div>
+      <button class="orb" id="mic" type="button" aria-label="Começar a ouvir">
+        <svg class="icon-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="9" y="3" width="6" height="11" rx="3"></rect>
+          <path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path>
+        </svg>
+        <svg class="icon-stop" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <rect x="7" y="7" width="10" height="10" rx="2"></rect>
+        </svg>
+      </button>
+      <p class="status" id="status">Toque para falar</p>
+      <div class="composer" id="composer">
+        <input id="textInput" type="text" placeholder="Ou escreva aqui o que precisa…" autocomplete="off"
+          aria-label="Mensagem">
+        <button class="primary" id="sendBtn" type="button">Enviar</button>
+      </div>
+      <label class="toggle"><input type="checkbox" id="tts" checked> Ler respostas em voz alta</label>
+    </footer>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <dialog id="voiceDialog">
+    <h2>Voz da assistente</h2>
+    <p>As vozes dependem do seu computador. No Edge, as vozes “Natural” costumam ser as mais agradáveis.</p>
+    <select id="voiceSelect" aria-label="Voz"></select>
+    <label class="range">Velocidade <input type="range" id="voiceRate" min="0.8" max="1.3" step="0.05"
+        value="1"></label>
+    <div class="dialog-actions">
+      <button class="ghost" id="voiceTest" type="button">Ouvir exemplo</button>
+      <button class="primary" id="voiceClose" type="button">Pronto</button>
+    </div>
+  </dialog>
+
+  <dialog id="keyDialog">
+    <h2>Chave da API do Gemini</h2>
+    <p>Crie uma chave gratuita no Google AI Studio e cole aqui. Ela fica só nesta aba e some quando você a fechar.</p>
+    <input id="keyInput" type="password" placeholder="Cole sua chave" autocomplete="off">
+    <div class="dialog-actions">
+      <button class="ghost" id="keyCancel" type="button">Cancelar</button>
+      <button class="primary" id="keySave" type="button">Salvar chave</button>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
